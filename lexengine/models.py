@@ -157,3 +157,5 @@ class Dialect:
             "dialect": self.dialect,
             "language": self.language
         }
+
+        return json

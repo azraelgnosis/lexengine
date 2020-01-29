@@ -3,13 +3,23 @@
 {% block content %}
     <table>
         <thead>
-            <th>Lemma</th>
-            <th>Language</th>
+            <tr>
+                <th>Word</th>
+                <th>IPA</th>
+            </tr>
         </thead>
         <tr>
             <form>
-                <td><input type="text" name="lemma"/></td>
+                <td><input type="text" name="word" /></td>
+                <td><input type="text" name="IPA" /></td>
+                <td><input type="submit" /></td>
             </form>
         </tr>
+        {% for word in lexicon %}
+            <tr>
+                <td>{{ word["word"] }}</td>
+                <td>{{ word["IPA"] }}</td>
+            </tr>
+        {% endfor %}
     </table>
 {% endblock content %}

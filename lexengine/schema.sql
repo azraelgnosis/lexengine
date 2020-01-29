@@ -1,11 +1,19 @@
+DROP TABLE IF EXISTS languages;
+DROP TABLE IF EXISTS lexemes;
+DROP TABLE IF EXISTS morphemes;
+DROP TABLE IF EXISTS inflections;
+DROP TABLE IF EXISTS words;
+DROP TABLE IF EXISTS pronunciations;
+DROP TABLE IF EXISTS dialects;
+
 CREATE TABLE languages (
 	lang_id INTEGER PRIMARY KEY AUTOINCREMENT,
 	language TEXT,
 	eng_name TEXT NOT NULL,
 	ancestor INTEGER,
-	iso_639-1 TEXT,
-	iso_639-2 TEXT,
-	iso_639-3 TEXT,
+	iso_639_1 TEXT,
+	iso_639_2 TEXT,
+	iso_639_3 TEXT,
 	FOREIGN KEY (ancestor) REFERENCES languages (lang_id)
 );
 
@@ -21,7 +29,7 @@ CREATE TABLE lexemes (
 CREATE TABLE morphemes (
 	morpheme_id INTEGER PRIMARY KEY AUTOINCREMENT,
 	morpheme TEXT NOT NULL,
-	abbreviaiton TEXT,
+	abbreviaiton TEXT
 );
 
 CREATE TABLE inflections (
@@ -58,7 +66,7 @@ CREATE TABLE pronunciations (
 );
 
 CREATE TABLE dialects (
-	dialect_id INTEGER PRIMAREY KEY AUTOINCREMENT,
+	dialect_id INTEGER PRIMARY KEY AUTOINCREMENT,
 	dialect TEXT NOT NULL,
 	language INTEGER NOT NULL,
 	FOREIGN KEY (language) REFERENCES languages (lang_id)
