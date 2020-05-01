@@ -3,15 +3,37 @@ import click
 from flask import current_app, g
 from flask.cli import with_appcontext
 
-def get_db():
+from lexengine.models import Row, Language
+
+class_map = {
+    "languages": Language
+}
+
+def get_db() -> sqlite3.Connection:
     if 'db' not in g:
         g.db = sqlite3.connect(
             current_app.config['DATABASE'],
             detect_types=sqlite3.PARSE_DECLTYPES
         )
-        g.db.row_factory = sqlite3.Row
+        g.db.row_factory = Row
 
     return g.db
+
+def select(table:str, columns:list=["*"], coerce=None) -> list:
+    db = get_db()
+
+    columns_str = ", ".join([f"{table}.{column}" for column in columns])
+
+    query = f"SELECT {columns_str} FROM {table}"
+
+    results = db.execute(query).fetchall()
+
+    if coerce and (Class := class_map.get(table)):
+        results = [Class.from_row(row) for row in results]
+
+    return results
+
+def get_language(language) -> Language: pass
 
 def close_db(e=None):
     db = g.pop('db', None)
