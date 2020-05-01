@@ -1,3 +1,27 @@
+import sqlite3
+class Row(sqlite3.Row):
+    def __init__(self, cursor, values):
+        self.cursor = cursor
+        self.values = values
+        self.columns = [col[0] for col in cursor.description]
+        
+        for col, val in zip(self.columns, self.values):
+            setattr(self, col, val)
+
+    def __repr__(self): return ", ".join([f"{key}: {self[key]}" for key in self.keys()])
+
+class Model:
+    __slots__ = []
+
+    @classmethod
+    def from_row(cls, row:Row):
+        # new_obj = cls()
+
+        # for key in row.keys():
+        #     setattr(new_obj, key, row[key])
+
+        return cls(**{key: row[key] for key in row.keys()})
+
 class Word:
     __slots__ = ["word_id", "word", "IPA", "lexeme", "inflection", "ancestor", "language"]
 
@@ -48,33 +72,17 @@ class Lexeme:
 
         return json
 
-class Language:
-    __slots__ = ["lang_id", "language", "eng_name", "ancestor", "iso_639_1", "iso_639_2", "iso_639_3"]
+class Language(Model):
+    __slots__ = ["language_id", "language", "eng_name", "ancestor", "iso_639_1", "iso_639_2", "iso_639_3"]
 	
-    def __init__(self, lang_id=None, language=None, eng_name=None, ancestor=None, iso_639_1=None, iso_639_2=None, iso_639_3=None):
-        self.lang_id = lang_id
+    def __init__(self, language_id=None, language=None, eng_name=None, ancestor=None, iso_639_1=None, iso_639_2=None, iso_639_3=None, **kwargs):
+        self.language_id = language_id
         self.language = language
         self.eng_name = eng_name
         self.ancestor = ancestor
         self.iso_639_1 = iso_639_1
         self.iso_639_2 = iso_639_2
         self.iso_639_3 = iso_639_3
-
-    def CSV(self):
-        return f"{self.lang_id},{self.language},{self.eng_name},{self.ancestor},{self.iso_639_1},{self.iso_639_2},{self.iso_639_3}"
-
-    def JSON(self):
-        json = {
-            "lang_id": self.lang_id,
-            "language": self.language,
-            "eng_name": self.eng_name,
-            "ancestor": self.ancestor,
-            "iso_639_1": self.iso_639_1,
-            "iso_639_2": self.iso_639_2,
-            "iso_639_3": self.iso_639_3
-        }
-
-        return json
 
 class Pronunciation:
     __slots__ = ["pronunciation_id", "IPA", "language", "dialect"]
