@@ -36,7 +36,6 @@ def languages():
 
         flash(error)
 
-    #return render_template('languages.html', languages=select("languages", coerce=True))
     return render_template('languages.html', languages=get_languages())
 
 @bp.route('/<language>/lexicon/', methods=('GET', 'POST'))
