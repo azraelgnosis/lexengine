@@ -19,12 +19,21 @@ def get_db() -> sqlite3.Connection:
 
     return g.db
 
-def select(table:str, columns:list=["*"], coerce=None) -> list:
+def select(table:str, columns:list=["*"], id=None, name=None, coerce=False) -> list:
+    """
+    SELECT `columns` FROM `table`
+        [WHERE `table`.id = `id`]
+        [WHERE `table`.name = `name`]
+    ;
+
+    If `coerce`, converts each row into the appropriate data type.
+    """
     db = get_db()
 
     columns_str = ", ".join([f"{table}.{column}" for column in columns])
-
     query = f"SELECT {columns_str} FROM {table}"
+    if id: query += f" WHERE {table}.id = {id};"
+    elif name: query += f" WHERE {table}.name = '{name}';"
 
     results = db.execute(query).fetchall()
 
@@ -32,6 +41,30 @@ def select(table:str, columns:list=["*"], coerce=None) -> list:
         results = [Class.from_row(row) for row in results]
 
     return results
+
+def insert(table:str, values:list) -> None:
+    """INSERT INTO `table` VALUES `values`;"""
+
+    db = get_db()
+    placeholders = ", ".join("?" * len(values))
+    query = f"INSERT INTO {table} VALUES (NULL, {placeholders});"
+    db.execute(query, values)
+    db.commit()
+
+def get_languages() -> list:
+    """
+    """
+
+    db = get_db()
+    query = """
+        SELECT languages.language_id, languages.name, eng_name, ancestors.name AS ancestor, iso_639_1, iso_639_2, iso_639_3
+            FROM `languages`
+            LEFT JOIN (SELECT language_id, name FROM languages) AS ancestors ON ancestors.language_id = languages.ancestor_id;
+        """
+    results = db.execute(query).fetchall()
+    languages = [Language.from_row(row) for row in results]
+
+    return languages
 
 def get_language(language) -> Language: pass
 
