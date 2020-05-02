@@ -1,1 +1,3 @@
-echo "Post-Compile Hook"
+echo "Start Post-Compile Hook"
+sh compile_scripts.sh
+echo "End Post-Compile Hook"
