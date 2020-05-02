@@ -9,7 +9,7 @@ DROP TABLE IF EXISTS dialects;
 
 CREATE TABLE languages (
 	language_id INTEGER PRIMARY KEY AUTOINCREMENT,
-	language TEXT,
+	name TEXT,
 	eng_name TEXT NOT NULL,
 	ancestor_id INTEGER,
 	iso_639_1 TEXT,

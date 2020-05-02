@@ -10,17 +10,60 @@ class Row(sqlite3.Row):
 
     def __repr__(self): return ", ".join([f"{key}: {self[key]}" for key in self.keys()])
 
+
 class Model:
     __slots__ = []
 
+    def __init__(self, **kwargs) -> None:
+        for key, val in kwargs.items():
+            setattr(self, key, val)
+        
+        self._init()
+    
+    def _init(self): ...
+
     @classmethod
-    def from_row(cls, row:Row):
+    def from_row(cls, row:Row) -> None:
         # new_obj = cls()
 
         # for key in row.keys():
         #     setattr(new_obj, key, row[key])
 
         return cls(**{key: row[key] for key in row.keys()})
+
+
+class Table(Model):
+    __slots__ = ['db', 'name', 'columns', 'size', 'rows']
+    def __init__(self, name:str, db:sqlite3.Connection) -> None:
+        self.name = name
+        self.db = db
+
+        self.columns = []
+        self.size = -1
+
+        self._set_columns()
+        self._set_size()
+
+    def _set_columns(self) -> None:
+        """
+        Retrieves the table columns from the database and assigns them to `self.columns` as a list.
+        """
+
+        cursor = self.db.execute(f"SELECT * FROM {self.name}")
+        self.columns = [col[0] for col in cursor.description]
+
+    def _set_size(self) -> None:
+        """
+        Retrieves the number of rows from database and assigns that to `self.size`.
+        """
+
+        self.size = self.db.execute(
+                f"SELECT COUNT(*) AS count FROM {self.name}"
+            ).fetchone()['count']
+
+    def __len__(self): return self.size
+    def __repr__(self): return f"{self.name}: {', '.join(self.columns)}"
+
 
 class Word:
     __slots__ = ["word_id", "word", "IPA", "lexeme", "inflection", "ancestor", "language"]
@@ -72,17 +115,10 @@ class Lexeme:
 
         return json
 
+
 class Language(Model):
-    __slots__ = ["language_id", "language", "eng_name", "ancestor", "iso_639_1", "iso_639_2", "iso_639_3"]
-	
-    def __init__(self, language_id=None, language=None, eng_name=None, ancestor=None, iso_639_1=None, iso_639_2=None, iso_639_3=None, **kwargs):
-        self.language_id = language_id
-        self.language = language
-        self.eng_name = eng_name
-        self.ancestor = ancestor
-        self.iso_639_1 = iso_639_1
-        self.iso_639_2 = iso_639_2
-        self.iso_639_3 = iso_639_3
+    __slots__ = ["language_id", "name", "eng_name", "ancestor_id", "ancestor", "iso_639_1", "iso_639_2", "iso_639_3"]
+
 
 class Pronunciation:
     __slots__ = ["pronunciation_id", "IPA", "language", "dialect"]
