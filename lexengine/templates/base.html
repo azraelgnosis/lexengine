@@ -6,6 +6,10 @@
 </head>
 <body>
     {% include '_nav.html' %}
+
+    {% for message in get_flashed_messages() %}
+        <div class="flash">{{ message }}</div>
+    {% endfor %}
     
     <section class="content">
         {% block content %}{% endblock content %}

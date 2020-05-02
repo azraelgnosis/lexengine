@@ -1,3 +1,7 @@
 nav {
     background-color: lime;
 }
+
+div.flash {
+    color: red;
+}

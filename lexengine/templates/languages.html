@@ -4,34 +4,34 @@
     <table class="table">
         <thead>
             <tr>
-                <th>Language</th>
+                <th>Name</th>
                 <th>English Name</th>
+                <th>Ancestor</th>
                 <th>ISO-639-1</th>
                 <th>ISO-639-2</th>
-                <th>ISO-639-3</th>
-                <th>Ancestor</th>
+                <th>ISO-639-3</th>                
             </tr>
         </thead>
         <tbody>
             <tr>
-                <form>
-                    <td><input type="text" placeholder="Language name" /></td>
-                    <td><input type="text" placeholder="English name" /></td>
-                    <td><input type="text" placeholder="ISO-639-1" /></td>
-                    <td><input type="text" placeholder="ISO-639-2" /></td>
-                    <td><input type="text" placeholder="ISO-639-3" /></td>
-                    <td><input type="text" placeholder="Ancestor" /></td>
+                <form method="POST">
+                    <td><input type="text" placeholder="Language name" name="name" /></td>
+                    <td><input type="text" placeholder="English name" name="eng_name" required/></td>
+                    <td><input type="text" placeholder="Ancestor" name="ancestor" /></td>
+                    <td><input type="text" placeholder="ISO-639-1" name="iso_639_1" /></td>
+                    <td><input type="text" placeholder="ISO-639-2" name="iso_639_2" /></td>
+                    <td><input type="text" placeholder="ISO-639-3" name="iso_639_3" /></td>                    
                     <td><input type="submit" value="Add Language" /></td>
                 </form>
             </tr>
             {% for language in languages %}
                 <tr>
-                    <td>{{ language.language }}</td>
+                    <td>{{ language.name }}</td>
                     <td>{{ language.eng_name }}</td>
+                    <td>{{ language.ancestor }}</td>
                     <td>{{ language.iso_639_1 }}</td>
                     <td>{{ language.iso_639_2 }}</td>
                     <td>{{ language.iso_639_3 }}</td>
-                    <td>{{ language.ancestor }}</td>
                 </tr>
             {% endfor %}
         </tbody>
