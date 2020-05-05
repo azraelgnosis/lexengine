@@ -1,4 +1,5 @@
 import sqlite3
+
 class Row(sqlite3.Row):
     def __init__(self, cursor, values):
         self.cursor = cursor
@@ -12,9 +13,11 @@ class Row(sqlite3.Row):
 
 
 class Model:
-    __slots__ = []
+    __slots__ = ['name']
 
     def __init__(self, **kwargs) -> None:
+        self.name = None
+
         for key, val in kwargs.items():
             setattr(self, key, val)
         
@@ -30,6 +33,8 @@ class Model:
         #     setattr(new_obj, key, row[key])
 
         return cls(**{key: row[key] for key in row.keys()})
+
+    def __repr__(self): return f"{self.name}"
 
 
 class Table(Model):
@@ -117,7 +122,8 @@ class Lexeme:
 
 
 class Language(Model):
-    __slots__ = ["language_id", "name", "eng_name", "ancestor_id", "ancestor", "iso_639_1", "iso_639_2", "iso_639_3"]
+    __slots__ = ["id", "name", "eng_name", "ancestor_id", "ancestor", "iso_639_1", "iso_639_2", "iso_639_3"]
+    columns = ['name', 'eng_name', 'ancestor_id', 'iso_639_1', 'iso_639_2', 'iso_639_3']
 
 
 class Pronunciation:
