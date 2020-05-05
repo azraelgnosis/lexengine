@@ -3,7 +3,8 @@ from flask import (
     Blueprint, flash, redirect, render_template, request, url_for
 )
 
-from .data import get_db, select, insert, get_languages
+from .data import get_db, select, insert, update, get_languages
+from .models import Language
 
 bp = Blueprint('lexengine', __name__)
 
@@ -23,20 +24,39 @@ def languages():
             except IndexError:
                 insert("languages", values=[ancestor_name, ancestor_name, None, None, None, None])
                 ancestor = select("languages", name=ancestor_name, coerce=True)[0]
-            values['ancestor_id'] = ancestor.language_id
+            values['ancestor_id'] = ancestor.id
 
         error = None        
         if select("languages", name=values['name']):
             error = "Language already exists in database."
 
         if not error:
-            columns = ['name', 'eng_name', 'ancestor_id', 'iso_639_1', 'iso_639_2', 'iso_639_3']
-            insert("languages", values=[values[col] for col in columns])
+            insert("languages", values=[values[col] for col in Language.columns])
             return redirect(url_for('lexengine.languages'))
 
         flash(error)
 
     return render_template('languages.html', languages=get_languages())
+
+@bp.route('/languages/edit/', methods=['GET', 'POST'])
+def language_edit():
+    if request.method == 'POST':
+        values = {key: val for key, val in request.form.items()}
+
+        if values['col'] == 'ancestor':
+            ancestor_name = values['val']
+            try:
+                ancestor = select("languages", name=ancestor_name, coerce=True)[0]
+            except IndexError:
+                insert("languages", values=[ancestor_name, ancestor_name, None, None, None, None])
+                ancestor = select("languages", name=ancestor_name, coerce=True)[0]
+            finally:
+                values['col'] = 'ancestor_id'
+                values['val'] = ancestor.id
+        
+        update("languages", values={values['col']: values['val']}, where=values['id'])
+    
+    return redirect(url_for('lexengine.languages'))
 
 @bp.route('/<language>/lexicon/', methods=('GET', 'POST'))
 def lexicon(language):
