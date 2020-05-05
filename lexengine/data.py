@@ -19,6 +19,38 @@ def get_db() -> sqlite3.Connection:
 
     return g.db
 
+def _where(condition, pk="id", name="name") -> str:
+    """
+    If `condition` is an int, returns '`pk` = `condition`'.
+    If `condition` is a str without spaces, returns '`name` = `condition`'
+    If `condition` is a str with spaces, returns `condition` as is.
+    If `condition` is a 1-dimensional list of size 2, returns 'elem[0] = elem[1]'
+    If `condition` is a 1-dimensional list of size 3, returns 'elem[0] elem[1] elem[2]',
+        assuming elem[1] is a comparison operator.
+    If `condition` is a multi-dimensional list, returns a series of condtions conjoined
+        by 'AND'.
+    """
+
+    clause = ""
+    try:
+        condition = int(condition)
+        clause += f"{pk} = {condition}"
+    except ValueError:
+        if isinstance(condition, str):
+            if len(condition.split(" ")) == 1:
+                clause += f"{name} = '{condition}'"
+            else:
+                clause = condition
+        elif isinstance(condition, list):
+            if isinstance(condition[0], list):
+                clause += " AND ".join([_where(case, pk, name) for case in condition])
+            elif len(condition) == 2:
+                clause += "=".join(str(elem) for elem in condition) # f"{condition[0]} = {condition[1]}"            
+            elif len(condition) == 3:
+                clause += " ".join(condition)
+
+    return clause
+
 def select(table:str, columns:list=["*"], id=None, name=None, coerce=False) -> list:
     """
     SELECT `columns` FROM `table`
@@ -51,15 +83,31 @@ def insert(table:str, values:list) -> None:
     db.execute(query, values)
     db.commit()
 
+def update(table:str, values:dict, where:dict) -> None:
+    """
+    UPDATE `table`
+        SET `values`
+        WHERE `where`
+    """
+
+    db = get_db()
+
+    SET = ", ".join([f"{column}='{value}'" for column, value in values.items()])
+    WHERE = _where(where)
+
+    query = f"UPDATE `{table}` SET {SET} WHERE {WHERE}"
+    db.execute(query)
+    db.commit()
+
 def get_languages() -> list:
     """
     """
 
     db = get_db()
     query = """
-        SELECT languages.language_id, languages.name, eng_name, ancestors.name AS ancestor, iso_639_1, iso_639_2, iso_639_3
+        SELECT languages.id, languages.name, eng_name, ancestors.name AS ancestor, iso_639_1, iso_639_2, iso_639_3
             FROM `languages`
-            LEFT JOIN (SELECT language_id, name FROM languages) AS ancestors ON ancestors.language_id = languages.ancestor_id;
+            LEFT JOIN (SELECT id, name FROM languages) AS ancestors ON ancestors.id = languages.ancestor_id;
         """
     results = db.execute(query).fetchall()
     languages = [Language.from_row(row) for row in results]
