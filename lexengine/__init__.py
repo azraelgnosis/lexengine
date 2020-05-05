@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, render_template
 
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
@@ -27,7 +27,8 @@ def create_app(test_config=None):
     from . import lexengine
     app.register_blueprint(lexengine.bp)
 
-    # compiles all typescript files
-    os.system('sh ./compile_scripts.sh')
+    @app.route('/templates/<string:filename>/')
+    def templates(filename):
+        return render_template(f"{filename}")
 
     return app
