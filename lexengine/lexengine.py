@@ -3,7 +3,7 @@ from flask import (
     Blueprint, flash, redirect, render_template, request, url_for
 )
 
-from .data import get_db, select, insert, update, get_languages
+from .data import get_db, select, insert, update, delete, get_languages
 from .models import Language
 
 bp = Blueprint('lexengine', __name__)
@@ -15,7 +15,7 @@ def index():
 @bp.route('/languages/', methods=('GET', 'POST'))
 def languages():
     if request.method == 'POST':
-        values = {key:val for key, val in request.form.items()}
+        values = {key:(val or None) for key, val in request.form.items()}
         values['ancestor_id'] = None
 
         if ancestor_name := values['ancestor']:            
@@ -26,7 +26,9 @@ def languages():
                 ancestor = select("languages", name=ancestor_name, coerce=True)[0]
             values['ancestor_id'] = ancestor.id
 
-        error = None        
+        error = None
+        if not values['name']:
+            error = "Name cannot be empty."
         if select("languages", name=values['name']):
             error = "Language already exists in database."
 
@@ -41,7 +43,7 @@ def languages():
 @bp.route('/languages/edit/', methods=['GET', 'POST'])
 def language_edit():
     if request.method == 'POST':
-        values = {key: val for key, val in request.form.items()}
+        values = {key:(val or None) for key, val in request.form.items()}
 
         if values['col'] == 'ancestor':
             ancestor_name = values['val']
@@ -53,9 +55,22 @@ def language_edit():
             finally:
                 values['col'] = 'ancestor_id'
                 values['val'] = ancestor.id
+            
+        error = None
+        if values['col'] == 'eng_name' and not values['val']:
+            error = "Name cannot be empty."
         
-        update("languages", values={values['col']: values['val']}, where=values['id'])
+        if not error:
+            update("languages", values={values['col']: values['val']}, where=values['id'])
+
+        flash(error)
     
+    return redirect(url_for('lexengine.languages'))
+
+@bp.route('/languages/delete/', methods=['POST'])
+def language_delete():
+    language_id = request.form['id']
+    delete('languages', language_id)
     return redirect(url_for('lexengine.languages'))
 
 @bp.route('/<language>/lexicon/', methods=('GET', 'POST'))

@@ -92,10 +92,21 @@ def update(table:str, values:dict, where:dict) -> None:
 
     db = get_db()
 
-    SET = ", ".join([f"{column}='{value}'" for column, value in values.items()])
+    SET = ", ".join([f"{column}=?" for column in values.keys()])
     WHERE = _where(where)
 
     query = f"UPDATE `{table}` SET {SET} WHERE {WHERE}"
+    db.execute(query, list(values.values()))
+    db.commit()
+
+def delete(table:str, where:dict) -> None:
+    """
+    DELETE FROM `table` WHERE `where`;
+    """
+
+    db = get_db()
+    WHERE = _where(where)
+    query = f"DELETE FROM {table} WHERE {WHERE};"
     db.execute(query)
     db.commit()
 

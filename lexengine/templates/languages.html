@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
+    <p>Leave value blank if unknown; insert a hyphen if it doesn't exist.</p>
     <table class="table">
         <thead>
             <tr>
@@ -9,7 +10,8 @@
                 <th>Ancestor</th>
                 <th>ISO-639-1</th>
                 <th>ISO-639-2</th>
-                <th>ISO-639-3</th>   
+                <th>ISO-639-3</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -21,17 +23,18 @@
                     <td><input type="text" placeholder="ISO-639-1" name="iso_639_1" /></td>
                     <td><input type="text" placeholder="ISO-639-2" name="iso_639_2" /></td>
                     <td><input type="text" placeholder="ISO-639-3" name="iso_639_3" /></td>                    
-                    <td><input type="submit" value="Add Language" /></td>
+                    <td><input type="submit" class="btn btn-primary" value="Add" /></td>
                 </form>
             </tr>
             {% for language in languages %}
                 <tr>
-                    <td id={{ language.id }} name="name">{{ language.name }}</td>
-                    <td id={{ language.id }} name="eng_name">{{ language.eng_name }}</td>
-                    <td id={{ language.id }} name="ancestor">{{ language.ancestor }}</td>
-                    <td id={{ language.id }} name="iso_639_1">{{ language.iso_639_1 }}</td>
-                    <td id={{ language.id }} name="iso_639_2">{{ language.iso_639_2 }}</td>
-                    <td id={{ language.id }} name="iso_639_3">{{ language.iso_639_3 }}</td>
+                    <td id={{ language.id }} name="name">{{ language.name or ''}}</td>
+                    <td id={{ language.id }} name="eng_name">{{ language.eng_name or ''}}</td>
+                    <td id={{ language.id }} name="ancestor">{{ language.ancestor or ''}}</td>
+                    <td id={{ language.id }} name="iso_639_1">{{ language.iso_639_1 or ''}}</td>
+                    <td id={{ language.id }} name="iso_639_2">{{ language.iso_639_2 or ''}}</td>
+                    <td id={{ language.id }} name="iso_639_3">{{ language.iso_639_3 or ''}}</td>
+                    <td><button type="button" class="btn btn-danger" id={{ language.id }} value="Delete">Delete</button></td>
                 </tr>
             {% endfor %}
         </tbody>
@@ -41,33 +44,8 @@
 
 {% block scripts %}
     <script>
-        $(document).ready(function() {
-            $('tr').on('click', 'td[id]', function() {
-                let td = $(this);
-                let text = td.text();
-                let id = td.attr('id');
-                let name = td.attr('name');
-                if (!td.children("input").length > 0) {
-                    td.html(
-                        `<input id=${id} name=${name} value=${text}></input>`
-                    );
-                }
-            });
-
-            $('tr').on('focusout', 'td[id] > input', function() {
-                let id = $(this).attr('id');
-                let val = $(this).val();
-                let col = $(this).attr('name');
-                $.post(
-                    `{{ url_for('lexengine.language_edit', lang_id='${id}') }}`,
-                    {id, val, col}
-                );
-
-                $(this).parent().replaceWith(
-                    `<td id=${id} name=${col}>${val}</td>`
-                );
-
-            })
-        });
+        let language_edit_url = {{ url_for('lexengine.language_edit')|tojson|safe }};
+        let language_delete_url = {{ url_for('lexengine.language_delete')|tojson|safe }};
     </script>
+    <script src="{{ url_for('static', filename='scripts/languages.js') }}"></script>
 {% endblock scripts %}  
