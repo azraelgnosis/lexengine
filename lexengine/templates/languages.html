@@ -5,6 +5,7 @@
     <table class="table">
         <thead>
             <tr>
+                <th></th>
                 <th>Name</th>
                 <th>English Name</th>
                 <th>Ancestor</th>
@@ -17,6 +18,7 @@
         <tbody>
             <tr>
                 <form method="POST">
+                    <td></td>
                     <td><input type="text" placeholder="Language name" name="name" /></td>
                     <td><input type="text" placeholder="English name" name="eng_name" required/></td>
                     <td><input type="text" placeholder="Ancestor" name="ancestor" /></td>
@@ -28,6 +30,11 @@
             </tr>
             {% for language in languages %}
                 <tr>
+                    <td>
+                        <a href="{{ url_for('lexengine.language', language_name=language.name) }}">
+                            <button type="button" class="btn btn-info" id={{ language.id }} value="Select">Select</button>
+                        </a>
+                    </td>
                     <td id={{ language.id }} name="name">{{ language.name or ''}}</td>
                     <td id={{ language.id }} name="eng_name">{{ language.eng_name or ''}}</td>
                     <td id={{ language.id }} name="ancestor">{{ language.ancestor or ''}}</td>

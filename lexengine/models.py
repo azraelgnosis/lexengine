@@ -14,6 +14,7 @@ class Row(sqlite3.Row):
 
 class Model:
     __slots__ = ['name']
+    rename = {}
 
     def __init__(self, **kwargs) -> None:
         self.name = None
@@ -32,7 +33,7 @@ class Model:
         # for key in row.keys():
         #     setattr(new_obj, key, row[key])
 
-        return cls(**{key: row[key] for key in row.keys()})
+        return cls(**{cls.rename.get(key, key): row[key] for key in row.keys()})
 
     def __repr__(self): return f"{self.name}"
 
@@ -70,33 +71,8 @@ class Table(Model):
     def __repr__(self): return f"{self.name}: {', '.join(self.columns)}"
 
 
-class Word:
+class Word(Model):
     __slots__ = ["word_id", "word", "IPA", "lexeme", "inflection", "ancestor", "language"]
-
-    def __init__(self, word_id=None, word=None, IPA=None, lexeme=None, inflection=None, ancestor=None, language=None):
-        self.word_id = word_id
-        self.word = word
-        self.IPA = IPA
-        self.lexeme = lexeme
-        self.inflection = inflection
-        self.ancestor = ancestor
-        self.language = language
-
-    def CSV(self):
-        return f"{self.word_id},{self.word},{self.IPA},{self.lexeme},{self.inflection},{self.ancestor},{self.language}"
-
-    def JSON(self):
-        json = {
-            "word_id": self.word_id,
-            "word": self.word,
-            "IPA": self.IPA,
-            "lexeme": self.lexeme,
-            "inflection": self.inflection,
-            "ancestor": self.ancestor,
-            "language": self.language
-        }
-
-        return json
 
 class Lexeme:
     __slots__ = ["lexeme_id", "lexeme", "lemma", "language"]
@@ -124,6 +100,7 @@ class Lexeme:
 class Language(Model):
     __slots__ = ["id", "name", "eng_name", "ancestor_id", "ancestor", "iso_639_1", "iso_639_2", "iso_639_3"]
     columns = ['name', 'eng_name', 'ancestor_id', 'iso_639_1', 'iso_639_2', 'iso_639_3']
+    rename = {"val": "name"}
 
 
 class Pronunciation:

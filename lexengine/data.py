@@ -3,7 +3,7 @@ import click
 from flask import current_app, g
 from flask.cli import with_appcontext
 
-from lexengine.models import Row, Language
+from lexengine.models import Row, Language, Word
 
 class_map = {
     "languages": Language
@@ -19,7 +19,7 @@ def get_db() -> sqlite3.Connection:
 
     return g.db
 
-def _where(condition, pk="id", name="name") -> str:
+def _where(condition, pk="id", val="val") -> str:
     """
     If `condition` is an int, returns '`pk` = `condition`'.
     If `condition` is a str without spaces, returns '`name` = `condition`'
@@ -31,19 +31,19 @@ def _where(condition, pk="id", name="name") -> str:
         by 'AND'.
     """
 
+    if not condition: return
+
     clause = ""
     try:
         condition = int(condition)
         clause += f"{pk} = {condition}"
     except ValueError:
         if isinstance(condition, str):
-            if len(condition.split(" ")) == 1:
-                clause += f"{name} = '{condition}'"
-            else:
-                clause = condition
-        elif isinstance(condition, list):
+            clause += f"{val} = '{condition}'"
+    except TypeError:
+        if isinstance(condition, list):
             if isinstance(condition[0], list):
-                clause += " AND ".join([_where(case, pk, name) for case in condition])
+                clause += " AND ".join([_where(case, pk, val) for case in condition])
             elif len(condition) == 2:
                 clause += "=".join(str(elem) for elem in condition) # f"{condition[0]} = {condition[1]}"            
             elif len(condition) == 3:
@@ -51,12 +51,9 @@ def _where(condition, pk="id", name="name") -> str:
 
     return clause
 
-def select(table:str, columns:list=["*"], id=None, name=None, coerce=False) -> list:
+def select(table:str, where:dict=None, columns:list=["*"], coerce=False) -> list:
     """
-    SELECT `columns` FROM `table`
-        [WHERE `table`.id = `id`]
-        [WHERE `table`.name = `name`]
-    ;
+    SELECT `columns` FROM `table` [WHERE `where`];
 
     If `coerce`, converts each row into the appropriate data type.
     """
@@ -64,8 +61,9 @@ def select(table:str, columns:list=["*"], id=None, name=None, coerce=False) -> l
 
     columns_str = ", ".join([f"{table}.{column}" for column in columns])
     query = f"SELECT {columns_str} FROM {table}"
-    if id: query += f" WHERE {table}.id = {id};"
-    elif name: query += f" WHERE {table}.name = '{name}';"
+    if where:
+        WHERE = _where(where)
+        query += f" WHERE {WHERE};"
 
     results = db.execute(query).fetchall()
 
@@ -73,6 +71,10 @@ def select(table:str, columns:list=["*"], id=None, name=None, coerce=False) -> l
         results = [Class.from_row(row) for row in results]
 
     return results
+
+#? will probaly need to add validation
+def select_one(table:str, where:dict, columns:list=['*'], coerce=False):
+    return select(table, where, columns, coerce)[0]
 
 def insert(table:str, values:list) -> None:
     """INSERT INTO `table` VALUES `values`;"""
@@ -110,22 +112,37 @@ def delete(table:str, where:dict) -> None:
     db.execute(query)
     db.commit()
 
-def get_languages() -> list:
+def get_languages(where:dict=None) -> list:
     """
     """
 
     db = get_db()
-    query = """
-        SELECT languages.id, languages.name, eng_name, ancestors.name AS ancestor, iso_639_1, iso_639_2, iso_639_3
-            FROM `languages`
-            LEFT JOIN (SELECT id, name FROM languages) AS ancestors ON ancestors.id = languages.ancestor_id;
-        """
+    
+    SELECT = "SELECT languages.id, languages.val AS name, eng_name, ancestors.val AS ancestor, iso_639_1, iso_639_2, iso_639_3"
+    FROM = "FROM `languages`"
+    JOIN = "LEFT JOIN (SELECT id, val FROM languages) AS ancestors ON ancestors.id = languages.ancestor_id"
+    query = " ".join([SELECT, FROM, JOIN])            
+            
+    if where:
+        WHERE = _where(where)
+        query += f" WHERE `languages`.{WHERE};"
+
     results = db.execute(query).fetchall()
     languages = [Language.from_row(row) for row in results]
 
     return languages
 
-def get_language(language) -> Language: pass
+def get_language(language) -> Language:
+    return get_languages(where=language)[0]
+
+def get_lexicon(language_id) -> list:
+    WHERE = _where(["language_id", language_id])
+    query = f"SELECT * FROM words WHERE {WHERE}"
+
+    words = get_db().execute(query).fetchall()
+    words = [Word.from_row(word) for word in words]
+
+    return words
 
 def close_db(e=None):
     db = g.pop('db', None)

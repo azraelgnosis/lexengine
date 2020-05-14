@@ -4,6 +4,7 @@ venv/
 __pycache__/
 
 instance/
+sandbox/
 
 .pytest_cache/
 .coverage
