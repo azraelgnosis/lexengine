@@ -1,0 +1,11 @@
+@font-face {
+    font-family: Tengwar Annatar;
+    src: url('/static/fonts/Tengwar Annatar.TFF');
+}
+
+textarea#tengwar { 
+    font-family: Tengwar Annatar;
+    font-size: 88px;
+    width: 10em;
+    height: 5em;
+}

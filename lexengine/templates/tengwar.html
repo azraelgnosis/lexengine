@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='stylesheets/tengwar.css') }}" />
+{% endblock head %}
+
+{% block content %}
+    <p>Note: 'y' and 'h' outside of consonant clusters have yet to be implemented.</p>
+    <select id="language">
+        <option value="cymraeg">Cymraeg</option>
+    </select>
+    <textarea id="text"></textarea>
+    <button>Transcribe</button>
+    <textarea id="tengwar" value="{{ transcribed }}" readonly></textarea>
+{% endblock content %}
+
+{% block scripts %}
+    <script>
+        let tengwar_url = {{ url_for('lexengine.tengwar')|tojson|safe }};
+        let transcribed = {{ transcribed|tojson|safe }};
+    </script>
+    <script src="{{url_for('static', filename='scripts/tengwar.js') }}"></script>
+{% endblock scripts %}
