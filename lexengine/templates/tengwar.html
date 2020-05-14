@@ -12,6 +12,11 @@
     <textarea id="text"></textarea>
     <button>Transcribe</button>
     <textarea id="tengwar" value="{{ transcribed }}" readonly></textarea>
+
+    <hr />
+    <img src="{{ url_for('static', filename='images/tengwar_cym.gif') }}" />
+    <img src="{{ url_for('static', filename='images/cymraeg_mode_notes.png') }}" />
+    <img src="{{ url_for('static', filename='images/cymraeg_mode_sample.png') }}" />
 {% endblock content %}
 
 {% block scripts %}
