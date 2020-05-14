@@ -3,7 +3,7 @@ from flask import (
     Blueprint, flash, redirect, render_template, request, url_for
 )
 
-from .data import get_db, select, insert, update, delete, get_languages
+from .data import get_db, select, select_one, insert, update, delete, get_languages, get_language, get_lexicon
 from .models import Language
 
 bp = Blueprint('lexengine', __name__)
@@ -20,16 +20,16 @@ def languages():
 
         if ancestor_name := values['ancestor']:            
             try:
-                ancestor = select("languages", name=ancestor_name, coerce=True)[0]
+                ancestor = select("languages", where=ancestor_name, coerce=True)[0]
             except IndexError:
                 insert("languages", values=[ancestor_name, ancestor_name, None, None, None, None])
-                ancestor = select("languages", name=ancestor_name, coerce=True)[0]
+                ancestor = select("languages", where=ancestor_name, coerce=True)[0]
             values['ancestor_id'] = ancestor.id
 
         error = None
         if not values['name']:
             error = "Name cannot be empty."
-        if select("languages", name=values['name']):
+        if select("languages", where=values['name']):
             error = "Language already exists in database."
 
         if not error:
@@ -40,6 +40,22 @@ def languages():
 
     return render_template('languages.html', languages=get_languages())
 
+@bp.route('/languages/<string:language_name>/')
+def language(language_name:str):
+    language = get_language(language_name) # select("languages", where=language_name, coerce=True)
+    
+    error = None
+    if not language:
+        error = "No such language."
+
+    if not error:
+        return render_template('language.html', language=language)
+
+    flash(error)
+
+    return redirect(url_for('lexengine.languages'))
+    
+
 @bp.route('/languages/edit/', methods=['GET', 'POST'])
 def language_edit():
     if request.method == 'POST':
@@ -48,10 +64,10 @@ def language_edit():
         if values['col'] == 'ancestor':
             ancestor_name = values['val']
             try:
-                ancestor = select("languages", name=ancestor_name, coerce=True)[0]
+                ancestor = select("languages", where=ancestor_name, coerce=True)[0]
             except IndexError:
                 insert("languages", values=[ancestor_name, ancestor_name, None, None, None, None])
-                ancestor = select("languages", name=ancestor_name, coerce=True)[0]
+                ancestor = select("languages", where=ancestor_name, coerce=True)[0]
             finally:
                 values['col'] = 'ancestor_id'
                 values['val'] = ancestor.id
@@ -73,16 +89,22 @@ def language_delete():
     delete('languages', language_id)
     return redirect(url_for('lexengine.languages'))
 
-@bp.route('/<language>/lexicon/', methods=('GET', 'POST'))
-def lexicon(language):
-    db = get_db()
-    lexicon = db.execute(
-        'SELECT * FROM words ORDER BY word'
-    ).fetchall()
+@bp.route('/languages/<string:language_name>/lexicon/', methods=('GET', 'POST'))
+def lexicon(language_name:str):
+    language = get_language(language_name)
+    lexicon = get_lexicon(language.id)
 
-    # dialects = db.execute(
-    #     'SELECT * FROM dialects'
-    #     'WHERE '
-    # )
+    return render_template('lexicon.html', language=language, lexicon=lexicon)
 
-    return render_template('lexicon.html', lexicon=lexicon)
+@bp.route('/tengwar/', methods=['GET', 'POST'])
+def tengwar():
+    import json
+    from lexengine.tengwar.cymraeg_to_tengwar import conversion
+
+    transcribed = 'empty'
+    if request.method == 'POST':
+        text = request.form['text']
+        transcribed = conversion(text)
+        return json.dumps({'status': 'OK', 'transcribed':transcribed})
+
+    return render_template('tengwar.html', transcribed=transcribed)

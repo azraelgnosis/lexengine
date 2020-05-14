@@ -1,15 +1,15 @@
 DROP TABLE IF EXISTS languages;
 DROP TABLE IF EXISTS lexemes;
-DROP TABLE IF EXISTS morphological_categories;
-DROP TABLE IF EXISTS morphemes;
-DROP TABLE IF EXISTS inflections;
 DROP TABLE IF EXISTS words;
-DROP TABLE IF EXISTS pronunciations;
+DROP TABLE IF EXISTS map_glosses;
+DROP TABLE IF EXISTS definitions;
 DROP TABLE IF EXISTS dialects;
+DROP TABLE IF EXISTS pronunciations;
+
 
 CREATE TABLE languages (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	name TEXT,
+	val TEXT,
 	eng_name TEXT NOT NULL,
 	ancestor_id INTEGER,
 	iso_639_1 TEXT,
@@ -28,52 +28,40 @@ CREATE TABLE lexemes (
 	FOREIGN KEY (ancestor_id) REFERENCES words (id)
 );
 
-CREATE TABLE morphological_categories (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	category TEXT NOT NULL
-);
-
-CREATE TABLE morphemes (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	morpheme TEXT NOT NULL,
-	abbreviaiton TEXT,
-	category_id INTEGER,
-	FOREIGN KEY (category_id) REFERENCES morphological_categories (id)
-);
-
-CREATE TABLE inflections (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	inflection TEXT NOT NULL,
-	morpheme_id INTEGER,
-	language_id INTEGER,
-	FOREIGN KEY (morpheme_id) REFERENCES morphemes (id),
-	FOREIGN KEY (language_id) REFERENCES languages (id)
-);
-
 CREATE TABLE words (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	word TEXT NOT NULL,
 	lexeme_id INTEGER,
-	inflection_id INTEGER,
+	language_id INTEGER NOT NULL,
 	FOREIGN KEY (lexeme_id) REFERENCES lexemes (id),
-	FOREIGN KEY (inflection_id) REFERENCES inflections (id)
+	FOREIGN KEY (language_id) REFERENCES languages (id)
 );
 
--- CREATE TABLE map_glosses (
--- 	gloss_id INTEGER PRIMARY KEY AUTOINCREMENT,
+CREATE TABLE map_glosses (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	gloss_id INTEGER NOT NULL,
+	word_id INTEGER NOT NULL,
+	FOREIGN KEY (gloss_id) REFERENCES words (id),
+	FOREIGN KEY (word_id) REFERENCES words (id)
+);
 
--- );
+CREATE TABLE definitions (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	val TEXT NOT NULL,
+	word_id INTEGER NOT NULL,
+	FOREIGN KEY (word_id) REFERENCES words (id)
+);
 
 CREATE TABLE dialects (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	dialect TEXT NOT NULL,
+	val TEXT NOT NULL,
 	language_id INTEGER NOT NULL,
 	FOREIGN KEY (language_id) REFERENCES languages (id)
 );
 
 CREATE TABLE pronunciations (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	IPA TEXT NOT NULL,
+	val TEXT NOT NULL,
 	language_id INTEGER NOT NULL,
 	dialect_id INTEGER,
 	word_id INTEGER,
