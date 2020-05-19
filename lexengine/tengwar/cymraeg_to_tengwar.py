@@ -92,4 +92,4 @@ def convert(word:str) -> str:
     return tengwar
 
 def conversion(cymraeg):
-    return " ".join([convert(word) for word in cymraeg.split(" ")])
+    return " ".join([convert(word.lower()) for word in cymraeg.split(" ")])

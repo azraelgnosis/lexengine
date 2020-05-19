@@ -1,6 +1,6 @@
 @font-face {
     font-family: Tengwar Annatar;
-    src: url('/static/fonts/Tengwar Annatar.TFF');
+    src: url('/static/fonts/tengwar_annatar.tff') format('truetype');
 }
 
 textarea#tengwar { 
