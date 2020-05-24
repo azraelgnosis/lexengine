@@ -1,10 +1,18 @@
 @font-face {
-    font-family: Tengwar Annatar;
-    src: url('/static/fonts/tengwar_annatar.tff') format('truetype');
+    font-family: "TengwarAnnatar";
+    src: url('/static/fonts/tengwar_annatar/tengwar_annatar.eot'); /* IE9 Compat Modes */
+    src: url('/static/fonts/tengwar_annatar/tengwar_annatar.eot?#iefix') format("embedded-opentype"), /* IE6-IE8 */
+        url("/static/fonts/tengwar_annatar/tengwar_annatar.otf") format("opentype"), /* Open Type Font */
+        url('/static/fonts/tengwar_annatar/tengwar_annatar.svg') format('svg'), /* Legacy iOS */
+        url('/static/fonts/tengwar_annatar/tengwar_annatar.tff') format('truetype'), /* Safari, Android, iOS */
+        url('/static/fonts/tengwar_annatar/tengwar_annatar.woff') format('woff'), /* Modern Browsers */
+        url('/static/fonts/tengwar_annatar/tengwar_annatar.woff2') format('woff2'); /* Modern Browsers */ 
+    font-weight: normal;
+    font-style: normal;      
 }
 
 textarea#tengwar { 
-    font-family: Tengwar Annatar;
+    font-family: "TengwarAnnatar";
     font-size: 88px;
     width: 10em;
     height: 5em;

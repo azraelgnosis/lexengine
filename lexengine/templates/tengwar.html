@@ -5,13 +5,12 @@
 {% endblock head %}
 
 {% block content %}
-    <p>Note: 'y' and 'h' outside of consonant clusters have yet to be implemented.</p>
     <select id="language">
         <option value="cymraeg">Cymraeg</option>
     </select>
     <textarea id="text"></textarea>
     <button>Transcribe</button>
-    <textarea id="tengwar" value="{{ transcribed }}" readonly></textarea>
+    <textarea id="tengwar" value="{{ transcribed }}"></textarea>
 
     <hr />
     <img src="{{ url_for('static', filename='images/tengwar_cym.gif') }}" />

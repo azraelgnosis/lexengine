@@ -69,15 +69,25 @@ def convert(word:str) -> str:
                     tengwar += consonants.get(graph)['key']
                 
             if vowel:
-                tengwar += vowels.get(vowel)[consonants.get(graph)['position']]
+                if vowel == 'a' and word[i:i+2] in ('ff', 'ph', 'th'):
+                    tengwar += 'D'
+                elif vowel == 'y' and any([V in vowels for V in word[i+1:]]):
+                    if letter == 's':
+                        tengwar = tengwar[:-1] + '8'
+                    tengwar += '(' if consonants.get(graph)['position'] == 0 else 'O'
+                else:
+                    tengwar += vowels.get(vowel)[consonants.get(graph)['position']]
                 vowel = ""
 
         elif letter in vowels:
             if letter in vowels_long:
                 tengwar += '~' + vowels.get(letter)[0]
-            elif i == len(word)-1: # or word[i+1] in vowels:
-                tengwar += '`' + vowels.get(letter)[3]
-            elif (diphthong := word[i:i+2]) in vowels:
+            elif i == len(word)-1: # vowel-final word
+                if letter == 'y' and len([x for x in word if x in vowels]) == 1:
+                    tengwar += '(' if consonants.get(graph)['position'] == 0 else 'O'
+                else:
+                    tengwar += '`' + vowels.get(letter)[3]
+            elif (diphthong := word[i:i+2]) in vowels: # diphthongs
                 tengwar += vowels.get(diphthong)[0]
                 i += 1
             elif word[i+1] in vowels:
@@ -86,7 +96,7 @@ def convert(word:str) -> str:
                 vowel = letter
             
         else:
-            raise KeyError(f"Character '{letter}'' not available.")
+            raise KeyError(f"Character '{letter}' not available.")
         i += 1
 
     return tengwar
