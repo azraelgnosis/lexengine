@@ -41,6 +41,11 @@ diphthongs = {
 
 vowels_long = ['â', 'ê', 'î', 'ô', 'û', 'ŵ', 'ŷ']
 
+punctuation = {
+    '.': '-',
+    ',': '=',
+}
+
 def convert(word:str) -> str:
     tengwar = ""
     vowel = ""
@@ -62,11 +67,11 @@ def convert(word:str) -> str:
                 else:
                     tengwar += consonants.get(graph)['key']
                 i += 1
-            elif (graph := word[i]) in consonants:
+            elif (graph := letter) :
                 if letter == 's' and vowel:
                     tengwar += 'i'
                 else:
-                    tengwar += consonants.get(graph)['key']
+                    tengwar += consonants.get(letter)['key']
                 
             if vowel:
                 if vowel == 'a' and word[i:i+2] in ('ff', 'ph', 'th'):
@@ -95,8 +100,8 @@ def convert(word:str) -> str:
             else:
                 vowel = letter
             
-        else:
-            raise KeyError(f"Character '{letter}' not available.")
+        elif letter in punctuation:
+            tengwar += punctuation.get(letter)
         i += 1
 
     return tengwar
