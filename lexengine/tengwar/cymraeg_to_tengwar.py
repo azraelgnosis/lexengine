@@ -79,14 +79,18 @@ def convert(word:str) -> str:
                 elif vowel == 'y' and any([V in vowels for V in word[i+1:]]):
                     if letter == 's':
                         tengwar = tengwar[:-1] + '8'
-                    tengwar += '(' if consonants.get(graph)['position'] == 0 else 'O'
+                        tengwar += '(' if consonants.get(graph)['position'] == 0 else 'O'
+                    elif letter == 'l':
+                        tengwar += 'L'
+                    else:
+                        tengwar += '(' if consonants.get(graph)['position'] == 0 else 'O'
                 else:
                     tengwar += vowels.get(vowel)[consonants.get(graph)['position']]
                 vowel = ""
 
         elif letter in vowels:
             if letter in vowels_long:
-                tengwar += '~' + vowels.get(letter)[0]
+                tengwar += vowels.get(letter)[0]
             elif i == len(word)-1: # vowel-final word
                 if letter == 'y' and len([x for x in word if x in vowels]) == 1:
                     tengwar += '(' if consonants.get(graph)['position'] == 0 else 'O'
