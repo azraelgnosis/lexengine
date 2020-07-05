@@ -74,6 +74,7 @@ class Table(Model):
 class Word(Model):
     __slots__ = ["word_id", "word", "IPA", "lexeme", "inflection", "ancestor", "language"]
 
+
 class Lexeme:
     __slots__ = ["lexeme_id", "lexeme", "lemma", "language"]
 
@@ -125,6 +126,7 @@ class Pronunciation:
 
         return json
 
+
 class Morpheme:
     __slots__ = ["morpheme_id", "morpheme", "abbreviation"]
 
@@ -144,6 +146,7 @@ class Morpheme:
         }
 
         return json
+
 
 class Inflection:
     __slots__ = ["inflection_id", "inflection", "morpheme", "language"]
@@ -166,6 +169,7 @@ class Inflection:
         }
 
         return json
+
 
 class Dialect:
     __slots__ = ["dialect_id", "dialect", "language"]
