@@ -3,10 +3,12 @@ from flask import (
     Blueprint, flash, redirect, render_template, request, url_for
 )
 
-from .data import get_db, select, select_one, insert, update, delete, get_languages, get_language, get_lexicon
+from lexengine.db import LexLoreKeeper
 from .models import Language
 
 bp = Blueprint('lexengine', __name__)
+lk = LexLoreKeeper()
+
 
 @bp.route('/', methods=('GET', 'POST'))
 def index():
@@ -14,7 +16,7 @@ def index():
 
 @bp.route('/languages/', methods=['GET'])
 def languages():
-    return render_template('languages.html', languages=get_languages())
+    return render_template('languages.html', languages=lk.get_languages())
 
 @bp.route('/languages/add/', methods=['POST'])
 def language_add():
@@ -24,21 +26,21 @@ def language_add():
     error = None
     if not values['name']:
         error = "Name cannot be empty."
-    if select("languages", where=values['name']):
+    if lk.select("languages", where=values['name']):
         error = "Language already exists in database."
     
     if ancestor_name := values['ancestor']:
         try:
-            ancestor = select("languages", where=ancestor_name, coerce=True)[0]
+            ancestor = lk.select("languages", where=ancestor_name, coerce=True)[0]
         except IndexError:
-            insert("languages", values=[ancestor_name, ancestor_name, None, None, None, None])
-            ancestor = select("languages", where=ancestor_name, coerce=True)[0]
+            lk.insert("languages", values=[ancestor_name, ancestor_name, None, None, None, None])
+            ancestor = lk.select("languages", where=ancestor_name, coerce=True)[0]
         values['ancestor_id'] = ancestor.id
 
     if error:
         flash(error)
     else:
-        insert("languages", values=[values[col] for col in Language.columns])
+        lk.insert("languages", values=[values[col] for col in Language.columns])
 
     return redirect(url_for('lexengine.languages'))
 
@@ -49,10 +51,10 @@ def language_edit():
     if values['col'] == 'ancestor':
         ancestor_name = values['val']
         try:
-            ancestor = select("languages", where=ancestor_name, coerce=True)[0]
+            ancestor = lk.select("languages", where=ancestor_name, coerce=True)[0]
         except IndexError:
-            insert("languages", values=[ancestor_name, ancestor_name, None, None, None, None])
-            ancestor = select("languages", where=ancestor_name, coerce=True)[0]
+            lk.insert("languages", values=[ancestor_name, ancestor_name, None, None, None, None])
+            ancestor = lk.select("languages", where=ancestor_name, coerce=True)[0]
         finally:
             values['col'] = 'ancestor_id'
             values['val'] = ancestor.id
@@ -64,19 +66,19 @@ def language_edit():
     if error:
         flash(error)
     else:
-        update("languages", values={values['col']: values['val']}, where=values['id'])
+        lk.update("languages", values={values['col']: values['val']}, where=values['id'])
 
     return redirect(url_for('lexengine.languages'))
 
 @bp.route('/languages/delete/', methods=['POST'])
 def language_delete():
     language_id = request.form['id']
-    delete('languages', language_id)
+    lk.delete('languages', language_id)
     return redirect(url_for('lexengine.languages'))
 
 @bp.route('/languages/<string:language_name>/')
 def language(language_name:str):
-    language = get_language(language_name) # select("languages", where=language_name, coerce=True)
+    language = lk.get_language(language_name) # select("languages", where=language_name, coerce=True)
     
     error = None
     if not language:
@@ -94,8 +96,8 @@ def lexicon(language_name:str):
     if request.method == 'POST':
         values = {key:(val or None) for key, val in request.form.items()}
 
-    language = get_language(language_name)
-    lexicon = get_lexicon(language.id)
+    language = lk.get_language(language_name)
+    lexicon = lk.get_lexicon(language.id)
 
     return render_template('lexicon.html', language=language, lexicon=lexicon)
 

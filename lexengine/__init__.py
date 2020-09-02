@@ -1,6 +1,7 @@
 import os
 from flask import Flask, render_template
 
+
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
@@ -21,8 +22,8 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    from . import data
-    data.init_app(app)
+    from lexengine import db
+    db.LexLoreKeeper.init_app(app)
 
     from . import lexengine
     app.register_blueprint(lexengine.bp)

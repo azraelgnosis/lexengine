@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
 
 {% block content %}
+    {% include '_lang-tabs.html' %}
+
     <h1>{{ language.name}} ({{ language.eng_name }})</h1>
     <p>Ancestor: {{ language.ancestor }}</p>
     <p>
@@ -8,4 +10,6 @@
         <span>ISO-639-2: {{ language.iso_639_2 }}</span> 
         <span>ISO-639-3: {{ language.iso_639_3 }}</span>
     </p>
+
+    {% include '_lexicon.html' %}
 {% endblock content %}
