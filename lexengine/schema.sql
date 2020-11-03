@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS map_glosses;
 DROP TABLE IF EXISTS definitions;
 DROP TABLE IF EXISTS dialects;
 DROP TABLE IF EXISTS pronunciations;
+DROP TABLE IF EXISTS grapheme;
 
 
 CREATE TABLE language (
@@ -18,22 +19,13 @@ CREATE TABLE language (
 	FOREIGN KEY (ancestor_id) REFERENCES language (language_id)
 );
 
-CREATE TABLE lexeme (
-	lexeme_idid INTEGER PRIMARY KEY AUTOINCREMENT,
-	lemma_id INTEGER NOT NULL,
-	language_id INTEGER NOT NULL,
-	ancestor_id INTEGER,
-	FOREIGN KEY (language_id) REFERENCES language (language_id),
-	FOREIGN KEY (lemma_id) REFERENCES word (word_id),
-	FOREIGN KEY (ancestor_id) REFERENCES word (word_id)
-);
-
 CREATE TABLE word (
 	word_id INTEGER PRIMARY KEY AUTOINCREMENT,
 	word TEXT NOT NULL,
-	lexeme_id INTEGER,
 	language_id INTEGER NOT NULL,
-	FOREIGN KEY (lexeme_id) REFERENCES lexeme (lexeme_id),
+	is_lemma INTEGER NOT NULL,
+	lemma_id INTEGER NOT NULL,
+	FOREIGN KEY (lemma_id) REFERENCES word (word_id),
 	FOREIGN KEY (language_id) REFERENCES language (language_id)
 );
 
@@ -68,4 +60,16 @@ CREATE TABLE pronunciation (
 	FOREIGN KEY (language_id) REFERENCES language (language_id),
 	FOREIGN KEY (dialect_id) REFERENCES dialect (dialect_id)
 	FOREIGN KEY (word_id) REFERENCES word (word_id)
+);
+
+CREATE TABLE script (
+	script_id INTEGER PRIMARY KEY AUTOINCREMENT,
+	script_val TEXT NOT NULL
+);
+
+CREATE TABLE grapheme (
+	grapheme_id INTEGER PRIMARY KEY AUTOINCREMENT,
+	grapheme_val TEXT NOT NULL,
+	script_id INTEGER NOT NULL,
+	FOREIGN KEY (script_id) REFERENCES script (script_id)
 );

@@ -17,31 +17,31 @@
         </thead>
         <tbody>
             <tr>
-                <form method="POST">
+                <form id="add_language" method="POST" action="{{ url_for('lexengine.language_add') }}">
                     <td></td>
-                    <td><input type="text" placeholder="Language name" name="name" /></td>
-                    <td><input type="text" placeholder="English name" name="eng_name" required/></td>
-                    <td><input type="text" placeholder="Ancestor" name="ancestor" /></td>
-                    <td><input type="text" placeholder="ISO-639-1" name="iso_639_1" /></td>
-                    <td><input type="text" placeholder="ISO-639-2" name="iso_639_2" /></td>
-                    <td><input type="text" placeholder="ISO-639-3" name="iso_639_3" /></td>                    
-                    <td><input type="submit" class="btn btn-primary" value="Add" /></td>
+                    <td><input type="text" placeholder="Language name" name="language_val" form="add_language"/></td>
+                    <td><input type="text" placeholder="English name" name="eng_name" form="add_language" required/></td>
+                    <td><input type="text" placeholder="Ancestor" name="ancestor" form="add_language"/></td>
+                    <td><input type="text" placeholder="ISO-639-1" name="iso_639_1" form="add_language"/></td>
+                    <td><input type="text" placeholder="ISO-639-2" name="iso_639_2" form="add_language"/></td>
+                    <td><input type="text" placeholder="ISO-639-3" name="iso_639_3" form="add_language"/></td>
+                    <td><input type="submit" class="btn btn-primary" value="Add" form="add_language"/></td>
                 </form>
             </tr>
             {% for language in languages %}
                 <tr>
                     <td>
-                        <a href="{{ url_for('lexengine.language', language_name=language.name) }}">
-                            <button type="button" class="btn btn-info" id={{ language.id }} value="Select">Select</button>
+                        <a href="{{ url_for('lexengine.language', language_name=language.language_val) }}">
+                            <button type="button" class="btn btn-info" id={{ language.language_id }} value="Select">Select</button>
                         </a>
                     </td>
-                    <td id={{ language.id }} name="name">{{ language.name or ''}}</td>
-                    <td id={{ language.id }} name="eng_name">{{ language.eng_name or ''}}</td>
-                    <td id={{ language.id }} name="ancestor">{{ language.ancestor or ''}}</td>
-                    <td id={{ language.id }} name="iso_639_1">{{ language.iso_639_1 or ''}}</td>
-                    <td id={{ language.id }} name="iso_639_2">{{ language.iso_639_2 or ''}}</td>
-                    <td id={{ language.id }} name="iso_639_3">{{ language.iso_639_3 or ''}}</td>
-                    <td><button type="button" class="btn btn-danger" id={{ language.id }} value="Delete">Delete</button></td>
+                    <td id={{ language.language_id }} name="language_val">{{ language.language_val or ''}}</td>
+                    <td id={{ language.language_id }} name="eng_name">{{ language.eng_name or ''}}</td>
+                    <td id={{ language.language_id }} name="ancestor">{{ language.ancestor or ''}}</td>
+                    <td id={{ language.language_id }} name="iso_639_1">{{ language.iso_639_1 or ''}}</td>
+                    <td id={{ language.language_id }} name="iso_639_2">{{ language.iso_639_2 or ''}}</td>
+                    <td id={{ language.language_id }} name="iso_639_3">{{ language.iso_639_3 or ''}}</td>
+                    <td><button type="button" class="btn btn-danger" id={{ language.language_id }} value="Delete">Delete</button></td>
                 </tr>
             {% endfor %}
         </tbody>

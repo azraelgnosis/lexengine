@@ -3,8 +3,9 @@ from flask import (
     Blueprint, flash, redirect, render_template, request, url_for
 )
 
-from lexengine.db import LexLoreKeeper
-from .models import Language
+from lexengine.const import *
+from lexengine.db import LexLoreKeeper, Table
+from lexengine.models import Language
 
 bp = Blueprint('lexengine', __name__)
 lk = LexLoreKeeper()
@@ -13,6 +14,13 @@ lk = LexLoreKeeper()
 @bp.route('/', methods=('GET', 'POST'))
 def index():
     return render_template("index.html")
+
+@bp.route('/tables/<string:table_name>/', methods=('GET'))
+def tables(table_name):
+    table = Table(table_name, lk.db)
+
+    return render_template('_table.html')
+
 
 @bp.route('/languages/', methods=['GET'])
 def languages():
@@ -24,23 +32,26 @@ def language_add():
     values['ancestor_id'] = None
 
     error = None
-    if not values['name']:
+    if not values['language_val']:
         error = "Name cannot be empty."
-    if lk.select("languages", where=values['name']):
+    if lk.select(TABLES.LANGUAGE, where=values['language_val']):
         error = "Language already exists in database."
     
     if ancestor_name := values['ancestor']:
         try:
-            ancestor = lk.select("languages", where=ancestor_name, coerce=True)[0]
+            ancestor = lk.select(TABLES.LANGUAGE, where=ancestor_name, datatype=True)[0]
         except IndexError:
-            lk.insert("languages", values=[ancestor_name, ancestor_name, None, None, None, None])
-            ancestor = lk.select("languages", where=ancestor_name, coerce=True)[0]
-        values['ancestor_id'] = ancestor.id
+            lk.insert(TABLES.LANGUAGE, values=[ancestor_name, ancestor_name, None, None, None, None])
+            ancestor = lk.select(TABLES.LANGUAGE, where=ancestor_name, datatype=True)[0]
+        values['ancestor_id'] = ancestor.language_id
 
     if error:
         flash(error)
     else:
-        lk.insert("languages", values=[values[col] for col in Language.columns])
+        lk.insert(TABLES.LANGUAGE, values={col: values[col] for col in Language.columns})
+        new_language = lk.get_language(values['language_val'])
+        lk.insert(TABLES.DIALECT, values={COLUMNS.DIALECT_VAL: new_language.language_val, 
+                                          COLUMNS.LANGUAGE_ID: new_language.language_id})
 
     return redirect(url_for('lexengine.languages'))
 
@@ -51,10 +62,10 @@ def language_edit():
     if values['col'] == 'ancestor':
         ancestor_name = values['val']
         try:
-            ancestor = lk.select("languages", where=ancestor_name, coerce=True)[0]
+            ancestor = lk.select("languages", where=ancestor_name, datatype=True)[0]
         except IndexError:
-            lk.insert("languages", values=[ancestor_name, ancestor_name, None, None, None, None])
-            ancestor = lk.select("languages", where=ancestor_name, coerce=True)[0]
+            lk.insert(TABLES.LANGUAGE, values=[ancestor_name, ancestor_name, None, None, None, None])
+            ancestor = lk.select(TABLES.LANGUAGE, where=ancestor_name, datatype=True)[0]
         finally:
             values['col'] = 'ancestor_id'
             values['val'] = ancestor.id
@@ -66,7 +77,7 @@ def language_edit():
     if error:
         flash(error)
     else:
-        lk.update("languages", values={values['col']: values['val']}, where=values['id'])
+        lk.update(TABLES.LANGUAGE, values={values['col']: values['val']}, where=values['id'])
 
     return redirect(url_for('lexengine.languages'))
 
@@ -79,13 +90,14 @@ def language_delete():
 @bp.route('/languages/<string:language_name>/')
 def language(language_name:str):
     language = lk.get_language(language_name) # select("languages", where=language_name, coerce=True)
+    dialects = lk.select(TABLES.DIALECT, where={COLUMNS.LANGUAGE_ID: language.language_id}, datatype=True)
     
     error = None
     if not language:
         error = "No such language."
 
     if not error:
-        return render_template('language.html', language=language)
+        return render_template('language.html', language=language, dialects=dialects)
 
     flash(error)
 

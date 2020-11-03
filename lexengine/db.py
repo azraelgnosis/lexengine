@@ -1,8 +1,8 @@
 from flask import current_app
+from lorekeeper import LoreKeeper, Table
 
-from lorekeeper import LoreKeeper
-
-from lexengine.models import Language, Word
+from lexengine.const import *
+from lexengine.models import Dialect, Language, Word
 
 PATH_DB = 'DATABASE'
 
@@ -10,27 +10,27 @@ PATH_DB = 'DATABASE'
 class LexLoreKeeper(LoreKeeper):
     def __init__(self):
         super().__init__(PATH_DB)
-        self.class_map = {
-            "languages": Language
+        self._table_map = {
+            TABLES.DIALECT: Dialect,
+            TABLES.LANGUAGE: Language
         }
 
     def get_languages(self, where:dict=None) -> list:
         """
-        SELECT language.language_id, language.language_val AS name, eng_name, ancestor.language_val AS ancestor, iso_639_1, iso_639_2, iso_639_3
+        SELECT language.language_id, language.language_val, eng_name, ancestor.language_val AS ancestor, iso_639_1, iso_639_2, iso_639_3
                 FROM `language`
                 LEFT JOIN (SELECT id, val FROM `language`) AS ancestor ON ancestor.language_id = language.ancestor_id
                 [WHERE `where`]
         """
 
         query = """
-            SELECT language.language_id, language.language_val AS name, eng_name, ancestor.language_val AS ancestor, iso_639_1, iso_639_2, iso_639_3
+            SELECT language.language_id, language.language_val, eng_name, ancestor.language_val AS ancestor, iso_639_1, iso_639_2, iso_639_3
                 FROM `language`
-                LEFT JOIN (SELECT id, val FROM `language`) AS ancestor ON ancestor.language_id = language.ancestor_id
-            """.replace("\n", " ")
+                LEFT JOIN (SELECT language_id, language_val FROM `language`) AS ancestor ON ancestor.language_id = language.ancestor_id
+            """.replace("\n", " ").strip()
 
         if where:
-            query += " WHERE {WHERE}".format(
-                WHERE=self._where(table='languages', conditions=where))
+            query += " WHERE {}".format(self._where(table=TABLES.LANGUAGE, conditions=where))
 
         results = self.db.execute(query).fetchall()
         languages = [Language.from_row(row) for row in results]

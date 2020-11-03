@@ -1,11 +1,26 @@
 <form></form>
-<table>
+<table class="table" id="add" method="POST" action="">
     <thead>
         <tr>
-            {% for column in columns %}
-                <th>{{ column.val }}</th>
+            {% for column in viewmodel.columns %}
+                <th>{{ column }}</th>
             {% endfor %}
         </tr>
     </thead>
-    <tbody></tbody>
+    <tbody>
+        <tr>
+            {% for column in viewmodel.columns in  %}
+                <td><input type="text" placeholder="{{ column }}..." name="{{ column }}" form="add" /></td>
+            {% endfor %}
+            <td><input type="submit" class="btn btn-primary" value="Add" form="add" /></td>
+        </tr>
+        {% for row in viewmodel.rows %}
+            <tr>
+                {% for key, val in row.items() %}
+                    <td id="{{ row.id }}" name="{{ col }}">{{ val or ''}}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot></tfoot>
 </table>
